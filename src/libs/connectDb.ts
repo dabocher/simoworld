@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import { connect, connection, ConnectionStates } from "mongoose";
 
 const { NEXT_PUBLIC_MONGODB_URI } = process.env;
 
@@ -8,9 +8,17 @@ if (!NEXT_PUBLIC_MONGODB_URI) {
   );
 }
 
+const isConnected: { connectionState: ConnectionStates } = {
+  connectionState: ConnectionStates.disconnected,
+};
+
 export const connectDatabase = async () => {
+  if (isConnected.connectionState === ConnectionStates.connected) {
+    console.log("Using existing database connection");
+    return Promise.resolve();
+  }
   try {
-    const { connection } = await mongoose.connect(NEXT_PUBLIC_MONGODB_URI);
+    const { connection } = await connect(NEXT_PUBLIC_MONGODB_URI);
     if (connection.readyState === 1) {
       console.log("Connected to MongoDB");
       return Promise.resolve();
